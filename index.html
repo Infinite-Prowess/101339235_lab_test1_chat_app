@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  </head>
+  <body>
+    <div class="container mt-5">
+      <div class="row">
+        <div class="col-md-4 offset-md-4">
+          <div class="card">
+            <div class="card-header">
+              Login
+            </div>
+            <div class="card-body">
+              <form>
+                <div class="form-group">
+                  <label for="username">Username</label>
+                  <input type="text" class="form-control" id="username" placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                  <label for="password">Password</label>
+                  <input type="password" class="form-control" id="password" placeholder="Enter password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Submit</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <style>
+      .chat-window {
+        width: 60%;
+        height: 500px;
+        overflow-y: auto;
+        margin: 10px auto;
+      }
+    
+      .chat-header {
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px;
+        border-radius: 5px 5px 0 0;
+      }
+    
+      .chat-header h3 {
+        margin: 0;
+      }
+    
+      .chat-body {
+        background-color: #f2f2f2;
+        padding: 10px;
+        height: 80%;
+      }
+    
+      .form-group {
+        margin-bottom: 10px;
+      }
+    
+      .form-control {
+        border-radius: 0;
+        border: 0;
+        border-bottom: 1px solid #007bff;
+      }
+    
+      .input-group-text {
+        background-color: #007bff;
+        color: #fff;
+        border-radius: 0;
+        border: 0;
+      }
+    
+      .input-group-append {
+        border-radius: 0;
+      }
+    
+      .typing-indicator {
+        color: #007bff;
+      }
+    </style>
+    <script>
+      // Establishing a socket connection
+      var socket = io.connect('http://localhost:3000');
+
+      // Get DOM elements
+      var userForm = document.getElementById('userForm');
+      var username = document.getElementById('username');
+      var messageForm = document.getElementById('messageForm');
+      var message = document.getElementById('message');
+      var chat = document.getElementById('chat');
+      var typing = document.getElementById('typing');
+
+      // Emit events
+      userForm.addEventListener('submit', setUsername);
+      messageForm.addEventListener('submit', sendMessage);
+      message.addEventListener('keypress', isTyping);
+
+      // Handle username
+      function setUsername(e) {
+      e.preventDefault();
+      socket.emit('setUsername', username.value);
+      }
+
+      // Send message
+      function sendMessage(e) {
+      e.preventDefault();
+      socket.emit('sendMessage', message.value);
+      message.value = "";
+      }
+
+      // Handle "user is typing"
+      function isTyping(e) {
+      socket.emit('isTyping');
+      }
+
+      // Listen for events
+      socket.on('userExists', function(data) {
+      alert(data);
+      });
+
+      socket.on('userSet', function(data) {
+      chat.style.display = 'block';
+      userForm.style.display = 'none';
+      });
+
+      socket.on('message', function(data) {
+      displayMessage(data);
+      });
+
+      socket.on('typing', function(data) {
+      typing.innerHTML = "<p><em>" + data + " is typing...</em></p>";
+      });
+
+      socket.on('stopTyping', function() {
+      typing.innerHTML = "";
+      });
+
+      // Display message
+      function displayMessage(data) {
+      chat.innerHTML += "<p><strong>" + data.username + ":</strong> " + data.message + "</p>";
+      }
+    </script>
+  </body>
+</html>
